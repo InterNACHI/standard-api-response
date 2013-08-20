@@ -76,7 +76,7 @@ vows.describe('API Response Package').addBatch({
 	'An 404 Error API response': {
 		topic: function() {
 			var err = new Error();
-			return new ErrorResponse(testMessage, 404, err);
+			return new ErrorResponse(testMessage, ErrorResponse.codes.NOT_FOUND, err);
 		},
 		'has a false "ok" property': function (resp) {
 			assert.equal(resp.ok, false);
