@@ -1,6 +1,8 @@
 Standard API Response
 =====================
 
+[![Build Status](https://travis-ci.org/InterNACHI/standard-api-response.png?branch=master)](https://travis-ci.org/InterNACHI/standard-api-response)
+
 This is a generic API response object for consistent API output across services.
 it is mostly meant for internal InterNACHI use, but anyone is welcome to use it.
 
