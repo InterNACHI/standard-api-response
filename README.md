@@ -26,14 +26,14 @@ Response Format
 ---------------
 
 ```
-HTTP/1.1 200 OK
+HTTP/1.1 201 OK
 Content-Type: application/json
 
 {
 	"ok": true,
 	"message": "User successfully created.",
 	"data": { ... },
-	"httpCode": 200, // Same as HTTP response code
+	"httpCode": 201, // Same as HTTP response code
 	"error": { ... } // Only present if "ok" == false
 }
 ```
