@@ -1,4 +1,5 @@
 var vows = require('vows'),
+	sinon = require('sinon'),
 	assert = require('assert'),
 	specReporter = require("vows/lib/vows/reporters/spec"),
 	pkg = require('../index.js'),
@@ -9,6 +10,32 @@ var vows = require('vows'),
 		michael: 'Jordan',
 		charles: 'Barkley'
 	};
+
+function getMockResponse(jsonp) {
+	var rand = Math.floor(Math.random() * 99999),
+		cbKey = 'cbk' + rand,
+		cbVal = 'cbv' + rand,
+		mock = {
+			req: {
+				'query': {}
+			},
+			app: {
+				get: sinon.stub()
+			},
+			status: sinon.spy(),
+			end: sinon.spy(),
+			jsonp: sinon.spy()
+		};
+
+	// Set up stubs
+	mock.app.get.withArgs('jsonp callback name').returns(cbKey);
+
+	if (jsonp) {
+		mock.req.query[cbKey] = cbVal;
+	}
+
+	return mock;
+}
 
 // Geocoder Test Suite
 vows.describe('API Response Package').addBatch({
@@ -92,6 +119,84 @@ vows.describe('API Response Package').addBatch({
 		},
 		'has an "error" property of type Error': function (resp) {
 			assert.instanceOf(resp.error, Error);
+		}
+	},
+	'Responding to a JSON request': {
+		topic: function() {
+			var res = getMockResponse(false),
+				resp = new OkResponse({ 'test': 'data' });
+
+			resp.send(res);
+
+			return {'res': res, 'resp': resp};
+		},
+		'looks up the jsonp callback name for res.app before sending': function(objs) {
+			var res = objs.res;
+
+			assert(res.app.get.withArgs('jsonp callback name').calledOnce);
+			assert(res.app.get.calledBefore(res.end));
+			assert(res.app.get.calledBefore(res.jsonp));
+		},
+		'sends an HTTP status code': function(objs) {
+			var res = objs.res,
+				resp = objs.resp;
+
+			sinon.assert.calledWith(res.status, resp.httpCode);
+		},
+		'sends the Response object as JSONP data to the client': function(objs) {
+			var res = objs.res,
+				resp = objs.resp;
+
+			sinon.assert.notCalled(res.end);
+			sinon.assert.calledWith(res.jsonp, resp);
+		}
+	},
+	'Responding to a JSONP request': {
+		topic: function() {
+			var res = getMockResponse(true),
+				resp = new OkResponse({ 'test': 'data' });
+
+			resp.send(res);
+
+			return {'res': res, 'resp': resp};
+		},
+		'looks up the jsonp callback name for res.app before sending': function(objs) {
+			var res = objs.res;
+
+			assert(res.app.get.withArgs('jsonp callback name').calledOnce);
+			assert(res.app.get.calledBefore(res.end));
+			assert(res.app.get.calledBefore(res.jsonp));
+		},
+		'does not send an HTTP status code': function(objs) {
+			var res = objs.res;
+			sinon.assert.notCalled(res.status);
+		},
+		'sends the Response object as JSON data to the client': function(objs) {
+			var res = objs.res,
+				resp = objs.resp;
+
+			sinon.assert.notCalled(res.end);
+			sinon.assert.calledWith(res.jsonp, resp);
+		}
+	},
+	'Responding with an empty response': {
+		topic: function() {
+			var res = getMockResponse(false),
+				resp = new OkResponse();
+
+			resp.send(res);
+
+			return {'res': res, 'resp': resp};
+		},
+		'sends a 204 No Content HTTP code': function(objs) {
+			var res = objs.res;
+
+			sinon.assert.calledWith(res.status, 204);
+		},
+		'closes the response with no data': function(objs) {
+			var res = objs.res;
+			sinon.assert.notCalled(res.jsonp);
+			sinon.assert.called(res.end);
 		}
 	}
 }).run({
