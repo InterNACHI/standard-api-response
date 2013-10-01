@@ -57,6 +57,15 @@ vows.describe('API Response Package').addBatch({
 		},
 		'has a null "error" property': function (resp) {
 			assert.isNull(resp.error);
+		},
+		'has an empty object "meta" property': function (resp) {
+			var count = 0;
+			for (key in resp.meta) {
+				if (obj.hasOwnProperty(key)) count++;
+			}
+
+			assert.isObject(resp.meta);
+			assert.equal(count, 0);
 		}
 	},
 	'An OK API response with data & message': {
@@ -78,6 +87,15 @@ vows.describe('API Response Package').addBatch({
 		},
 		'has a null "error" property': function (resp) {
 			assert.isNull(resp.error);
+		},
+		'has an empty object "meta" property': function (resp) {
+			var count = 0;
+			for (key in resp.meta) {
+				if (obj.hasOwnProperty(key)) count++;
+			}
+
+			assert.isObject(resp.meta);
+			assert.equal(count, 0);
 		}
 	},
 	'An empty Error API response': {
@@ -98,6 +116,15 @@ vows.describe('API Response Package').addBatch({
 		},
 		'has a null "error" property': function (resp) {
 			assert.isNull(resp.error);
+		},
+		'has an empty object "meta" property': function (resp) {
+			var count = 0;
+			for (key in resp.meta) {
+				if (obj.hasOwnProperty(key)) count++;
+			}
+
+			assert.isObject(resp.meta);
+			assert.equal(count, 0);
 		}
 	},
 	'An 404 Error API response': {
@@ -119,6 +146,31 @@ vows.describe('API Response Package').addBatch({
 		},
 		'has an "error" property of type Error': function (resp) {
 			assert.instanceOf(resp.error, Error);
+		},
+		'has an empty object "meta" property': function (resp) {
+			var count = 0;
+			for (key in resp.meta) {
+				if (obj.hasOwnProperty(key)) count++;
+			}
+
+			assert.isObject(resp.meta);
+			assert.equal(count, 0);
+		}
+
+	},
+	'An OK API response with metadata': {
+		topic: function() {
+			return new OkResponse({}, 200, 'message', {
+				key1: 'Key One',
+				key2: 'Key Two'
+			});
+		},
+		'has a "meta" property': function (resp) {
+			assert.isObject(resp.meta);
+		},
+		'has populated meta property': function (resp) {
+			assert.equal(resp.meta.key1, 'Key One');
+			assert.equal(resp.meta.key2, 'Key Two');
 		}
 	},
 	'Responding to a JSON request': {
